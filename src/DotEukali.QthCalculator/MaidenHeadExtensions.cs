@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Linq;
 
 namespace DotEukali.QthCalculator
 {
     public static class MaidenHeadExtensions
     {
-        public static double Latitude(this MaidenHead maidenHead, int granularity = 8) => maidenHead.Latitude(true, granularity);
+        public static double Latitude(this MaidenHead maidenHead, int granularity) => maidenHead.Latitude(true, granularity);
         public static double Latitude(this MaidenHead maidenHead, bool getCenter = true, int granularity = 8)
         {
             granularity.ThrowIfInvalidGranularity();
@@ -32,7 +33,7 @@ namespace DotEukali.QthCalculator
             return Math.Round(latitude - 90, 6);
         }
 
-        public static double Longitude(this MaidenHead maidenHead, int granularity = 8) => maidenHead.Longitude(true, granularity);
+        public static double Longitude(this MaidenHead maidenHead, int granularity) => maidenHead.Longitude(true, granularity);
         public static double Longitude(this MaidenHead maidenHead, bool getCenter = true, int granularity = 8)
         {
             granularity.ThrowIfInvalidGranularity();
@@ -62,6 +63,8 @@ namespace DotEukali.QthCalculator
 
         public static int DistanceTo(this MaidenHead from, MaidenHead to, UnitOfMeasure unitOfMeasure = UnitOfMeasure.Kilometers, int granularity = 8)
         {
+            granularity = Min(from.Length, to.Length, granularity);
+
             double fromLat = from.Latitude(granularity);
             double fromLong = from.Longitude(granularity);
 
@@ -76,7 +79,7 @@ namespace DotEukali.QthCalculator
                      * Math.Sin(dLongRadians / 2) * Math.Sin(dLongRadians / 2);
 
             double angle = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-
+            
             return AsUnitOfMeasure(angle * ConstantValues.EarthRadiusKm, unitOfMeasure);
         }
 
@@ -91,5 +94,7 @@ namespace DotEukali.QthCalculator
                 UnitOfMeasure.Yards => distanceInKm * ConstantValues.KmToYards,
                 _ => throw new ArgumentOutOfRangeException(nameof(unitOfMeasure), unitOfMeasure, null)
             }, 0);
+
+        private static int Min(params int[] ints) => ints.Min();
     }
 }

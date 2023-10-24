@@ -83,6 +83,9 @@ namespace DotEukali.QthCalculator
             return AsUnitOfMeasure(angle * ConstantValues.EarthRadiusKm, unitOfMeasure);
         }
 
+        public static bool IsValid(this MaidenHead maidenHead, bool strict = false) => maidenHead.Location.IsValidMaidenHead(strict);
+
+
         private static double GetRadians(double deg) => deg * (Math.PI / 180D);
 
         private static int AsUnitOfMeasure(double distanceInKm, UnitOfMeasure unitOfMeasure) =>

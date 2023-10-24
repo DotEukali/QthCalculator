@@ -8,7 +8,6 @@
         }
 
         public readonly string Location;
-        public bool IsValid(bool strict = false) => Location.IsValidMaidenHead(strict);
 
         public int Length => Location.Length;
 

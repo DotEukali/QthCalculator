@@ -12,6 +12,11 @@
 		<PackageTags>QTH MaidenHead Grid</PackageTags>
 		<PackageProjectUrl>https://github.com/DotEukali/QthCalculator</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/DotEukali/QthCalculator</RepositoryUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="../../README.md" Pack="true" PackagePath="\"/>
+	</ItemGroup>
 
 </Project>

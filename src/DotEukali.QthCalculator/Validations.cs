@@ -17,7 +17,7 @@ namespace DotEukali.QthCalculator
 
         public static bool IsValidMaidenHead(this string maidenHead, bool strict = false)
         {
-            Regex regex = new Regex(@"^[A-R]{2}([0-9]{2})?([a-x]{2})?([0-9]{2})?$", strict ? RegexOptions.None : RegexOptions.IgnoreCase, TimeSpan.FromSeconds(1));
+            Regex regex = new Regex(ValidationConstants.MaidenHeadRegex, strict ? RegexOptions.None : RegexOptions.IgnoreCase, TimeSpan.FromSeconds(1));
 
             return regex.IsMatch(maidenHead);
         }

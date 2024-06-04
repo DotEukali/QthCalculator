@@ -5,8 +5,9 @@ namespace DotEukali.QthCalculator
 {
     public static class MaidenHeadExtensions
     {
-        public static double Latitude(this MaidenHead maidenHead, int granularity) => maidenHead.Latitude(true, granularity);
-        public static double Latitude(this MaidenHead maidenHead, bool getCenter = true, int granularity = 8)
+        public static double Latitude(this MaidenHead maidenHead, int granularity) => maidenHead.Latitude(LatitudePoint.Middle, granularity);
+        
+        public static double Latitude(this MaidenHead maidenHead, LatitudePoint latitudePoint = LatitudePoint.Middle, int granularity = 8)
         {
             granularity.ThrowIfInvalidGranularity();
 
@@ -22,19 +23,27 @@ namespace DotEukali.QthCalculator
             if (length >= 6) latitude += (location[5] - 65D) / 24D;
             if (length >= 8) latitude += int.Parse(location.Substring(7, 1)) / 240D;
 
-            if (!getCenter)
-                return Math.Round(latitude - 90, 6);
-
-            if (length == 2) latitude += 5D;
-            else if (length == 4) latitude += ('L' - 65D + 0.5D) / 24D + 1D / 48D;
-            else if (length == 6) latitude += 1D / 48D;
-            else if (length == 8) latitude += 1D / 480D;
+            if (latitudePoint == LatitudePoint.Top)
+            {
+                if (length == 2) latitude += 10D;
+                else if (length == 4) latitude += (('L' - 65D + 0.5D) / 24D + 1D / 48D) * 2;
+                else if (length == 6) latitude += (1D / 48D) * 2;
+                else if (length == 8) latitude += (1D / 480D) * 2;
+            }
+            else if (latitudePoint == LatitudePoint.Middle)
+            {
+                if (length == 2) latitude += 5D;
+                else if (length == 4) latitude += ('L' - 65D + 0.5D) / 24D + 1D / 48D;
+                else if (length == 6) latitude += 1D / 48D;
+                else if (length == 8) latitude += 1D / 480D;
+            }
 
             return Math.Round(latitude - 90, 6);
         }
 
-        public static double Longitude(this MaidenHead maidenHead, int granularity) => maidenHead.Longitude(true, granularity);
-        public static double Longitude(this MaidenHead maidenHead, bool getCenter = true, int granularity = 8)
+        public static double Longitude(this MaidenHead maidenHead, int granularity) => maidenHead.Longitude(LongitudePoint.Middle, granularity);
+        
+        public static double Longitude(this MaidenHead maidenHead, LongitudePoint longitudePoint = LongitudePoint.Middle, int granularity = 8)
         {
             granularity.ThrowIfInvalidGranularity();
 
@@ -50,13 +59,20 @@ namespace DotEukali.QthCalculator
             if (length >= 6) longitude += (location[4] - 65) / 12D;
             if (length >= 8) longitude += int.Parse(location.Substring(6, 1)) / 120D;
 
-            if (!getCenter)
-                return Math.Round(longitude - 180, 6);
-
-            if (length == 2) longitude += 10D;
-            else if (length == 4) longitude += ('L' - 65 + 0.5D) / 12D + 1D / 24D;
-            else if (length == 6) longitude += 1D / 24D;
-            else if (length == 8) longitude += 1D / 240D;
+            if (longitudePoint == LongitudePoint.Middle)
+            {
+                if (length == 2) longitude += 10D;
+                else if (length == 4) longitude += ('L' - 65 + 0.5D) / 12D + 1D / 24D;
+                else if (length == 6) longitude += 1D / 24D;
+                else if (length == 8) longitude += 1D / 240D;
+            }
+            else if (longitudePoint == LongitudePoint.Right)
+            {
+                if (length == 2) longitude += 20D;
+                else if (length == 4) longitude += (('L' - 65 + 0.5D) / 12D + 1D / 24D) * 2;
+                else if (length == 6) longitude += (1D / 24D) * 2;
+                else if (length == 8) longitude += (1D / 240D) * 2;
+            }
 
             return Math.Round(longitude - 180, 6);
         }
@@ -75,11 +91,11 @@ namespace DotEukali.QthCalculator
             double dLongRadians = GetRadians(toLong - fromLong);
 
             double a = Math.Sin(dLatRadians / 2) * Math.Sin(dLatRadians / 2)
-                     + Math.Cos(GetRadians(fromLat)) * Math.Cos(GetRadians(toLat))
-                     * Math.Sin(dLongRadians / 2) * Math.Sin(dLongRadians / 2);
+                       + Math.Cos(GetRadians(fromLat)) * Math.Cos(GetRadians(toLat))
+                                                       * Math.Sin(dLongRadians / 2) * Math.Sin(dLongRadians / 2);
 
             double angle = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-            
+
             return AsUnitOfMeasure(angle * ConstantValues.EarthRadiusKm, unitOfMeasure);
         }
 

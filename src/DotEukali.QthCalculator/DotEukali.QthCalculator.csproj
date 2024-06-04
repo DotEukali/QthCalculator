@@ -6,7 +6,7 @@
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Title>DotEukali.QthCalculator</Title>
 		<Authors>DotEukali</Authors>
-		<Version>1.0.1</Version>
+		<Version>1.0.2</Version>
 		<Description>Simple class and extension methods for converting Maidenhead grid references to lat and longs and calculating distances between them.</Description>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageTags>QTH MaidenHead Grid</PackageTags>

@@ -2,12 +2,15 @@
 {
     public class MaidenHead
     {
+        public MaidenHead()
+        { }
+        
         public MaidenHead(string location)
         {
             Location = location;
         }
 
-        public readonly string Location;
+        public string Location { get; set; }
 
         public int Length => Location.Length;
 

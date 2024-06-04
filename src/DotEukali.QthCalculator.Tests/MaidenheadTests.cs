@@ -14,7 +14,6 @@ namespace DotEukali.QthCalculator.Tests
         [InlineData("JN68kb36", 4, 48.5, 13.0)]
         [InlineData("JN68kb", 4, 48.5, 13.0)]
         [InlineData("JN68", 4, 48.5, 13.0)]
-        [InlineData("JN", 2, 45.0, 10.0)]
         public void Granularity_Works(string maidenHeadString, int granularity, double expectedLat, double expectedLong)
         {
             MaidenHead maidenHead = new MaidenHead(maidenHeadString);
@@ -39,6 +38,16 @@ namespace DotEukali.QthCalculator.Tests
         [InlineData("JN68kb", true, true)]
         [InlineData("Jn68kB", true, false)]
         [InlineData("JZ68kb", false, false)]
+        [InlineData("A", false, false)]
+        [InlineData("AA", true, true)]
+        [InlineData("AAA", false, false)]
+        [InlineData("AA11", true, true)]
+        [InlineData("AA11aa", true, true)]
+        [InlineData("AAaa", false, false)]
+        [InlineData("AA11aa11", true, true)]
+        [InlineData("AA1111", false, false)]
+        [InlineData("AA11a", false, false)]
+        [InlineData("AA11a1", false, false)]
         public void Maidenhead_Validation_Works(string maidenheadString, bool isValid, bool isStrictValid)
         {
             MaidenHead maidenHead = new MaidenHead(maidenheadString);

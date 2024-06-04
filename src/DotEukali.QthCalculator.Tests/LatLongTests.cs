@@ -6,6 +6,40 @@ namespace DotEukali.QthCalculator.Tests
 {
     public class LatLongTests
     {
+        [InlineData("QG", -20.0, -25.0, -30.0)]
+        [InlineData("QG62", -27.0, -27.5, -28.0)]
+        [InlineData("QG62ek", -27.541667, -27.5625, -27.583333)]
+        [InlineData("QG62ek98", -27.545833, -27.547917, -27.55)]
+        [Theory]
+        public void TestLatitude(string location, double top, double middle, double bottom)
+        {
+            MaidenHead maidenHead = new MaidenHead(location);
+
+            maidenHead.IsValid().Should().BeTrue();
+
+            maidenHead.Latitude(LatitudePoint.Top).Should().Be(top);
+            maidenHead.Latitude(LatitudePoint.Middle).Should().Be(middle);
+            maidenHead.Latitude(LatitudePoint.Bottom).Should().Be(bottom);
+            
+        }
+        
+        [InlineData("QG", 140.0, 150.0, 160.0)]
+        [InlineData("QG62", 152.0, 153.0, 154.0)]
+        [InlineData("QG62ek", 152.333333, 152.375, 152.416667)]
+        [InlineData("QG62ek98", 152.408333, 152.4125, 152.416667)]
+        [Theory]
+        public void TestLongitude(string location, double left, double middle, double right)
+        {
+            MaidenHead maidenHead = new MaidenHead(location);
+
+            maidenHead.IsValid().Should().BeTrue();
+
+            maidenHead.Longitude(LongitudePoint.Left).Should().Be(left);
+            maidenHead.Longitude(LongitudePoint.Middle).Should().Be(middle);
+            maidenHead.Longitude(LongitudePoint.Right).Should().Be(right);
+            
+        }
+        
         [Theory]
         [MemberData(nameof(LatLongData))]
         public void Lat_n_Long_Calculates_Successfully(string maidenHeadString, double expectedLatEdge, double expectedLongEdge, double expectedLatCenter, double expectedLongCenter)
@@ -14,11 +48,11 @@ namespace DotEukali.QthCalculator.Tests
 
             maidenHead.IsValid().Should().BeTrue();
 
-            maidenHead.Latitude(false).Should().Be(expectedLatEdge);
-            maidenHead.Longitude(false).Should().Be(expectedLongEdge);
+            maidenHead.Latitude(LatitudePoint.Bottom).Should().Be(expectedLatEdge);
+            maidenHead.Longitude(LongitudePoint.Left).Should().Be(expectedLongEdge);
 
-            maidenHead.Latitude(true).Should().Be(expectedLatCenter);
-            maidenHead.Longitude(true).Should().Be(expectedLongCenter);
+            maidenHead.Latitude(LatitudePoint.Middle).Should().Be(expectedLatCenter);
+            maidenHead.Longitude(LongitudePoint.Middle).Should().Be(expectedLongCenter);
         }
         
         public static IEnumerable<object[]> LatLongData()
@@ -28,6 +62,7 @@ namespace DotEukali.QthCalculator.Tests
             yield return new object[] { "QG62ek", -27.583333, 152.333333, -27.5625, 152.375 };
             yield return new object[] { "QG62", -28.0, 152.0, -27.5, 153.0 };
             yield return new object[] { "QG", -30.0, 140.0, -25.0, 150.0 };
+            yield return new object[] { "QH", -20.0, 140.0, -15.0, 150.0 };
             yield return new object[] { "JN68kb36", 48.066667, 12.858333, 48.06875, 12.8625 };
             yield return new object[] { "JN68kb", 48.041667, 12.833333, 48.0625, 12.875 };
             yield return new object[] { "JN68", 48, 12.0, 48.5, 13.0 };

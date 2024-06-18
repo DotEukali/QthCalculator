@@ -10,13 +10,13 @@ namespace DotEukali.QthCalculator.Tests
         [MemberData(nameof(DistanceData))]
         public void Distance_Calculates_Successfully(string a, string b, int kms, int miles, int mtrs, int yards)
         {
-            MaidenHead start = MaidenHead.Build(a);
-            MaidenHead finish = MaidenHead.Build(b);
+            Maidenhead start = MaidenheadCalculator.GetMaidenhead(a);
+            Maidenhead finish = MaidenheadCalculator.GetMaidenhead(b);
 
-            start.DistanceTo(finish).Should().Be(kms);
-            start.DistanceTo(finish, UnitOfMeasure.Meters).Should().Be(mtrs);
-            start.DistanceTo(finish, UnitOfMeasure.Miles).Should().Be(miles);
-            start.DistanceTo(finish, UnitOfMeasure.Yards).Should().Be(yards);
+            MaidenheadCalculator.GetDistance(start, finish).Should().Be(kms);
+            MaidenheadCalculator.GetDistance(start, finish, UnitOfMeasure.Meters).Should().Be(mtrs);
+            MaidenheadCalculator.GetDistance(start, finish, UnitOfMeasure.Miles).Should().Be(miles);
+            MaidenheadCalculator.GetDistance(start, finish, UnitOfMeasure.Yards).Should().Be(yards);
         }
 
         public static IEnumerable<object[]> DistanceData()

@@ -1,6 +1,6 @@
 ﻿namespace DotEukali.QthCalculator
 {
-    internal static class ConstantValues
+    internal static class Constants
     {
         public const int EarthRadiusKm = 6371;
         public const double KmToMeters = 1000;

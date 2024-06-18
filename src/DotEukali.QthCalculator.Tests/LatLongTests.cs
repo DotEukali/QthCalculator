@@ -1,82 +1,179 @@
-﻿using FluentAssertions;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using FluentAssertions;
 using Xunit;
 
 namespace DotEukali.QthCalculator.Tests
 {
     public class LatLongTests
     {
-        [InlineData("QG", -20.0, -25.0, -30.0)]
-        [InlineData("QG62", -27.0, -27.5, -28.0)]
-        [InlineData("QG62ek", -27.541667, -27.5625, -27.583333)]
-        [InlineData("QG62ek98", -27.545833, -27.547917, -27.55)]
         [Theory]
-        public void TestLatitude(string location, double top, double middle, double bottom)
+        [MemberData(nameof(LocationData))]
+        public void Extreme_Locations_Resolve_To_Maidenhead_Location(TestLocationArea location)
         {
-            MaidenHead maidenHead = new MaidenHead(location);
+            double minStep = 0.000001;
+            double latitudeBottom = location.LatitudeBottom + minStep;
+            double latitudeTop = location.LatitudeTop - minStep;
+            double longitudeLeft = location.LongitudeLeft + minStep;
+            double longitudeRight = location.LongitudeRight - minStep;
+            LocatorType locatorType = (LocatorType)location.Maidenhead.Length;
 
-            maidenHead.IsValid().Should().BeTrue();
+            List<Maidenhead> maidenheadPoints =
+            [
+                MaidenheadCalculator.GetMaidenhead(latitudeBottom, longitudeLeft, locatorType),
+                MaidenheadCalculator.GetMaidenhead(latitudeTop, longitudeLeft, locatorType),
+                MaidenheadCalculator.GetMaidenhead(latitudeTop, longitudeRight, locatorType),
+                MaidenheadCalculator.GetMaidenhead(latitudeBottom, longitudeRight, locatorType),
+                MaidenheadCalculator.GetMaidenhead(location.LatitudeMiddle, location.LongitudeMiddle, locatorType)
+            ];
 
-            maidenHead.Latitude(LatitudePoint.Top).Should().Be(top);
-            maidenHead.Latitude(LatitudePoint.Middle).Should().Be(middle);
-            maidenHead.Latitude(LatitudePoint.Bottom).Should().Be(bottom);
-            
+            maidenheadPoints.All(x => x.Location == location.Maidenhead).Should().BeTrue();
         }
-        
-        [InlineData("QG", 140.0, 150.0, 160.0)]
-        [InlineData("QG62", 152.0, 153.0, 154.0)]
-        [InlineData("QG62ek", 152.333333, 152.375, 152.416667)]
-        [InlineData("QG62ek98", 152.408333, 152.4125, 152.416667)]
+
         [Theory]
-        public void TestLongitude(string location, double left, double middle, double right)
+        [MemberData(nameof(LocationData))]
+        public void Lat_n_Long_Calculates_Successfully(TestLocationArea location)
         {
-            MaidenHead maidenHead = new MaidenHead(location);
+            Maidenhead maidenhead = MaidenheadCalculator.GetMaidenhead(location.Maidenhead);
 
-            maidenHead.IsValid().Should().BeTrue();
-
-            maidenHead.Longitude(LongitudePoint.Left).Should().Be(left);
-            maidenHead.Longitude(LongitudePoint.Middle).Should().Be(middle);
-            maidenHead.Longitude(LongitudePoint.Right).Should().Be(right);
-            
+            maidenhead.Latitude(LatitudePoint.South).Should().Be(location.LatitudeBottom);
+            maidenhead.Latitude(LatitudePoint.North).Should().Be(location.LatitudeTop);
+            Math.Round(maidenhead.Latitude(LatitudePoint.Middle), 5).Should().Be(Math.Round(location.LatitudeMiddle, 5));
+            maidenhead.Longitude(LongitudePoint.West).Should().Be(location.LongitudeLeft);
+            maidenhead.Longitude(LongitudePoint.East).Should().Be(location.LongitudeRight);
+            Math.Round(maidenhead.Longitude(LongitudePoint.Middle), 5).Should().Be(Math.Round(location.LongitudeMiddle, 5));
         }
-        
-        [Theory]
-        [MemberData(nameof(LatLongData))]
-        public void Lat_n_Long_Calculates_Successfully(string maidenHeadString, double expectedLatEdge, double expectedLongEdge, double expectedLatCenter, double expectedLongCenter)
-        {
-            MaidenHead maidenHead = new MaidenHead(maidenHeadString);
 
-            maidenHead.IsValid().Should().BeTrue();
-
-            maidenHead.Latitude(LatitudePoint.Bottom).Should().Be(expectedLatEdge);
-            maidenHead.Longitude(LongitudePoint.Left).Should().Be(expectedLongEdge);
-
-            maidenHead.Latitude(LatitudePoint.Middle).Should().Be(expectedLatCenter);
-            maidenHead.Longitude(LongitudePoint.Middle).Should().Be(expectedLongCenter);
-        }
-        
-        public static IEnumerable<object[]> LatLongData()
-        {
-            yield return new object[] { "QG62ek22", -27.575, 152.35, -27.572917, 152.354167 };
-            yield return new object[] { "QG62ek98", -27.55, 152.408333, -27.547917, 152.4125 };
-            yield return new object[] { "QG62ek", -27.583333, 152.333333, -27.5625, 152.375 };
-            yield return new object[] { "QG62", -28.0, 152.0, -27.5, 153.0 };
-            yield return new object[] { "QG", -30.0, 140.0, -25.0, 150.0 };
-            yield return new object[] { "QH", -20.0, 140.0, -15.0, 150.0 };
-            yield return new object[] { "JN68kb36", 48.066667, 12.858333, 48.06875, 12.8625 };
-            yield return new object[] { "JN68kb", 48.041667, 12.833333, 48.0625, 12.875 };
-            yield return new object[] { "JN68", 48, 12.0, 48.5, 13.0 };
-            yield return new object[] { "JN", 40.0, 0.0, 45.0, 10.0 };
-            yield return new object[] { "FI09st64", -0.191667, -78.45, -0.189583, -78.445833 };
-            yield return new object[] { "FI09st", -0.208333, -78.5, -0.1875, -78.458333 };
-            yield return new object[] { "FI09", -1.0, -80.0, -0.5, -79.0 };
-            yield return new object[] { "FI", -10.0, -80.0, -5.0, -70.0 };
-
-            yield return new object[] { "IA80", -90.0, -4.0, -89.5, -3.0 };
-            yield return new object[] { "IA", -90.0, -20.0, -85.0, -10.0 };
-
-            yield return new object[] { "AR09", 89.0, -180.0, 89.5, -179.0 };
-            yield return new object[] { "AR", 80.0, -180.0, 85.0, -170.0 };
-        }
+        public static TheoryData<TestLocationArea> LocationData =>
+            new TheoryData<TestLocationArea>
+            {
+                new TestLocationArea("QG62ek22")
+                {
+                    LatitudeBottom = -27.575,
+                    LatitudeTop = -27.570833,
+                    LongitudeLeft = 152.35,
+                    LongitudeRight = 152.358333
+                },
+                new TestLocationArea("QG62ek98")
+                {
+                    LatitudeBottom = -27.55,
+                    LatitudeTop = -27.545833,
+                    LongitudeLeft = 152.408333,
+                    LongitudeRight = 152.416667
+                },
+                new TestLocationArea("QG62ek")
+                {
+                    LatitudeBottom = -27.583333,
+                    LatitudeTop = -27.541667,
+                    LongitudeLeft = 152.333333,
+                    LongitudeRight = 152.416667
+                },
+                new TestLocationArea("QG62")
+                {
+                    LatitudeBottom = -28.0,
+                    LatitudeTop = -27.0,
+                    LongitudeLeft = 152.0,
+                    LongitudeRight = 154.0
+                },
+                new TestLocationArea("QG")
+                {
+                    LatitudeBottom = -30.0,
+                    LatitudeTop = -20.0,
+                    LongitudeLeft = 140.0,
+                    LongitudeRight = 160.0
+                },
+                new TestLocationArea("QH")
+                {
+                    LatitudeBottom = -20.0,
+                    LatitudeTop = -10.0,
+                    LongitudeLeft = 140.0,
+                    LongitudeRight = 160
+                },
+                new TestLocationArea("JN68kb36")
+                {
+                    LatitudeBottom = 48.066667,
+                    LatitudeTop = 48.070833,
+                    LongitudeLeft = 12.858333,
+                    LongitudeRight = 12.866667
+                },
+                new TestLocationArea("JN68kb")
+                {
+                    LatitudeBottom = 48.041667,
+                    LatitudeTop = 48.083333,
+                    LongitudeLeft = 12.833333,
+                    LongitudeRight = 12.916667
+                },
+                new TestLocationArea("JN68")
+                {
+                    LatitudeBottom = 48.0,
+                    LatitudeTop = 49.0,
+                    LongitudeLeft = 12.0,
+                    LongitudeRight = 14.0
+                },
+                new TestLocationArea("JN")
+                {
+                    LatitudeBottom = 40.0,
+                    LatitudeTop = 50.0,
+                    LongitudeLeft = 0.0,
+                    LongitudeRight = 20.0
+                },
+                new TestLocationArea("FI09st64")
+                {
+                    LatitudeBottom = -0.191667,
+                    LatitudeTop = -0.1875,
+                    LongitudeLeft = -78.45,
+                    LongitudeRight = -78.441667
+                },
+                new TestLocationArea("FI09st")
+                {
+                    LatitudeBottom = -0.208333,
+                    LatitudeTop = -0.166667,
+                    LongitudeLeft = -78.5,
+                    LongitudeRight = -78.416667
+                },
+                new TestLocationArea("FI09")
+                {
+                    LatitudeBottom = -1.0,
+                    LatitudeTop = 0.0,
+                    LongitudeLeft = -80.0,
+                    LongitudeRight = -78.0
+                },
+                new TestLocationArea("FI")
+                {
+                    LatitudeBottom = -10.0,
+                    LatitudeTop = 0.0,
+                    LongitudeLeft = -80.0,
+                    LongitudeRight = -60.0
+                },
+                new TestLocationArea("IA80")
+                {
+                    LatitudeBottom = -90.0,
+                    LatitudeTop = -89.0,
+                    LongitudeLeft = -4.0,
+                    LongitudeRight = -2.0
+                },
+                new TestLocationArea("IA")
+                {
+                    LatitudeBottom = -90.0,
+                    LatitudeTop = -80.0,
+                    LongitudeLeft = -20.0,
+                    LongitudeRight = 0
+                },
+                new TestLocationArea("AR09")
+                {
+                    LatitudeBottom = 89.0,
+                    LatitudeTop = 90.0,
+                    LongitudeLeft = -180.0,
+                    LongitudeRight = -178
+                },
+                new TestLocationArea("AR")
+                {
+                    LatitudeBottom = 80.0,
+                    LatitudeTop = 90.0,
+                    LongitudeLeft = -180.0,
+                    LongitudeRight = -160.0
+                }
+            };
     }
 }

@@ -16,22 +16,10 @@ namespace DotEukali.QthCalculator.Tests
         [InlineData("JN68", 4, 48.5, 13.0)]
         public void Granularity_Works(string maidenHeadString, int granularity, double expectedLat, double expectedLong)
         {
-            MaidenHead maidenHead = new MaidenHead(maidenHeadString);
+            Maidenhead maidenhead = MaidenheadCalculator.GetMaidenhead(maidenHeadString);
 
-            maidenHead.IsValid().Should().BeTrue();
-
-            maidenHead.Latitude(granularity).Should().Be(expectedLat);
-            maidenHead.Longitude(granularity).Should().Be(expectedLong);
-        }
-
-        [Fact]
-        public void Invalid_Granularity_Does_Throw()
-        {
-            MaidenHead maidenHead = new MaidenHead("AA00aa");
-
-            maidenHead.IsValid().Should().BeTrue();
-
-            FluentActions.Invoking(() => maidenHead.Latitude(3)).Should().Throw<Exception>();
+            maidenhead.Latitude((LocatorType)granularity).Should().Be(expectedLat);
+            maidenhead.Longitude((LocatorType)granularity).Should().Be(expectedLong);
         }
 
         [Theory]
@@ -50,10 +38,37 @@ namespace DotEukali.QthCalculator.Tests
         [InlineData("AA11a1", false, false)]
         public void Maidenhead_Validation_Works(string maidenheadString, bool isValid, bool isStrictValid)
         {
-            MaidenHead maidenHead = new MaidenHead(maidenheadString);
+            MaidenheadCalculator.IsValidMaidenheadReference(maidenheadString, false).Should().Be(isValid);
+            MaidenheadCalculator.IsValidMaidenheadReference(maidenheadString, true).Should().Be(isStrictValid);
 
-            maidenHead.IsValid(false).Should().Be(isValid);
-            maidenHead.IsValid(true).Should().Be(isStrictValid);
+            MaidenheadCalculator.TryGetMaidenhead(maidenheadString, out _).Should().Be(isValid);
+
+            if (isValid)
+            {
+                FluentActions.Invoking(() => MaidenheadCalculator.GetMaidenhead(maidenheadString)).Should().NotThrow();
+            }
+            else
+            {
+                FluentActions.Invoking(() => MaidenheadCalculator.GetMaidenhead(maidenheadString)).Should().Throw<Exception>();
+            }
+
+        }
+
+        [Fact]
+        public void Maidenheads_Objects_With_Equal_Values_Are_Equal()
+        {
+            Maidenhead mh1 = MaidenheadCalculator.GetMaidenhead("AA00aa00");
+            Maidenhead mh2 = MaidenheadCalculator.GetMaidenhead("aa00aa00");
+
+            mh1.Equals(mh2).Should().BeTrue();
+        }
+
+        [Fact]
+        public void ToString_Returns_Maidenhead_String()
+        {
+            Maidenhead mh1 = MaidenheadCalculator.GetMaidenhead("AA00aa00");
+
+            mh1.ToString().Should().Be("AA00aa00");
         }
     }
 }
